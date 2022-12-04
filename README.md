@@ -1,2 +1,2 @@
 # inlinejs-database
-IndexedDB wrapper for the InlineJS reactive JavaScript framework
+DOM IndexedDB wrapper for the InlineJS JavaScript framework
