@@ -1,13 +1,14 @@
-import { IDatabaseConcept } from "./types";
-export declare class DatabaseConcept implements IDatabaseConcept {
+import { LocalStorageWrapper } from './local-storage-wrapper';
+import { IDatabaseConcept } from './types';
+export declare class LocalStorageConcept implements IDatabaseConcept {
     private wrappers_;
-    Wrap(name: string): any;
+    Wrap(name: string): LocalStorageWrapper;
     Open(name: string): Promise<void>;
     Close(name: string): Promise<void>;
     CloseAll(): Promise<void>;
     Read<T>(name: string, key: string): Promise<T | null>;
     Write<T>(name: string, key: string, value: T): Promise<void>;
-    SetupIndex(name: string, fields: Record<string, boolean>): Promise<Array<IDBIndex>>;
+    SetupIndex(name: string, fields: Record<string, boolean>): Promise<Array<any>>;
     Delete(name: string): Promise<void>;
     private GetWrapper_;
 }

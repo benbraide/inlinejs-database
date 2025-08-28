@@ -1,13 +1,13 @@
-import { IDatabaseConcept } from "./types";
-export declare class DatabaseConcept implements IDatabaseConcept {
+import { SessionStorageWrapper } from './session-storage-wrapper';
+export declare class SessionStorageConcept {
     private wrappers_;
-    Wrap(name: string): any;
+    Wrap(name: string): SessionStorageWrapper;
     Open(name: string): Promise<void>;
     Close(name: string): Promise<void>;
     CloseAll(): Promise<void>;
     Read<T>(name: string, key: string): Promise<T | null>;
     Write<T>(name: string, key: string, value: T): Promise<void>;
-    SetupIndex(name: string, fields: Record<string, boolean>): Promise<Array<IDBIndex>>;
+    SetupIndex(name: string, fields: Record<string, boolean>): Promise<Array<any>>;
     Delete(name: string): Promise<void>;
     private GetWrapper_;
 }

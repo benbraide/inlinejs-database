@@ -28,7 +28,7 @@ export class DatabaseConcept implements IDatabaseConcept{
         });
     }
 
-    public Read<T>(name: string, key: string): Promise<T>{
+    public Read<T>(name: string, key: string): Promise<T | null>{
         return this.GetWrapper_(name).Read<T>(key);
     }
 

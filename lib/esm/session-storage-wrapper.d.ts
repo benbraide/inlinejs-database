@@ -1,9 +1,7 @@
-export declare class DatabaseWrapper {
+export declare class SessionStorageWrapper {
     private name_;
-    private handle_;
-    private isOpening_;
-    private queuedRequests_;
-    constructor(name_: string);
+    private data_;
+    constructor(name: string);
     get Name(): string;
     get IsOpen(): boolean;
     get IsOpening(): boolean;
@@ -11,7 +9,8 @@ export declare class DatabaseWrapper {
     Close(): Promise<void>;
     Read<T>(key: string): Promise<T | null>;
     Write<T>(key: string, value: T): Promise<void>;
-    SetupIndex(fields: Record<string, boolean>): Promise<Array<IDBIndex>>;
+    SetupIndex(fields: Record<string, boolean>): Promise<Array<any>>;
     Delete(): Promise<void>;
-    private ExecuteQueue_;
+    private Load_;
+    private Save_;
 }

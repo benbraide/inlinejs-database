@@ -9,7 +9,7 @@ export declare class DatabaseWrapper {
     get IsOpening(): boolean;
     Open(): Promise<void>;
     Close(): Promise<void>;
-    Read<T>(key: string): Promise<T>;
+    Read<T>(key: string): Promise<T | null>;
     Write<T>(key: string, value: T): Promise<void>;
     SetupIndex(fields: Record<string, boolean>): Promise<Array<IDBIndex>>;
     Delete(): Promise<void>;

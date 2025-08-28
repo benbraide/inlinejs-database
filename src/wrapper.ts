@@ -58,7 +58,9 @@ export class DatabaseWrapper{
                     reject((event.target as IDBOpenDBRequest).error);
                 });
 
-                db.createObjectStore('data');
+                if (!db.objectStoreNames.contains('data')){
+                    db.createObjectStore('data');
+                }
             });
         });
     }
@@ -78,7 +80,7 @@ export class DatabaseWrapper{
         return Promise.resolve();
     }
 
-    public Read<T>(key: string): Promise<T>{
+    public Read<T>(key: string): Promise<T | null>{
         if (this.isOpening_){// Database is opening
             return new Promise((resolve, reject) => {// Queue request
                 this.queuedRequests_.push(success => (success ? this.Read<T>(key).then(resolve, reject) : reject()));
@@ -137,25 +139,45 @@ export class DatabaseWrapper{
             });
         }
 
-        if (!this.handle_){// Database is closed
-            return Promise.reject(new Error('Database is closed'));
+        if (!this.handle_){ // Database is closed, open it first
+            return this.Open().then(() => this.SetupIndex(fields));
         }
         
-        return new Promise((resolve, reject) => {// Setup index
-            const transaction = this.handle_!.transaction('data', 'readwrite');
-            const objectStore = transaction.objectStore('data');
-            const indexes = new Array<IDBIndex>();
+        const transaction = this.handle_.transaction('data', 'readonly');
+        const objectStore = transaction.objectStore('data');
+        const existingIndexes = Array.from(objectStore.indexNames);
+        const needsUpgrade = Object.keys(fields).some(field => !existingIndexes.includes(field));
 
-            for (const [field, unique] of Object.entries(fields)){
-                indexes.push(objectStore.createIndex(field, field, {unique}));
-            }
+        if (!needsUpgrade) {
+            return Promise.resolve([]);
+        }
 
-            transaction.addEventListener('complete', () => {
-                resolve(indexes);
+        // Needs upgrade, must close and reopen with a new version
+        const currentVersion = this.handle_.version;
+        this.handle_.close();
+        this.handle_ = null;
+
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(this.name_, currentVersion + 1);
+            
+            request.addEventListener('success', (event) => {
+                this.handle_ = (event.target as IDBOpenDBRequest).result;
+                resolve([]); // Don't have access to the created indexes here, but the operation succeeded.
             });
 
-            transaction.addEventListener('error', (event) => {
-                reject((event.target as IDBRequest).error);
+            request.addEventListener('error', (event) => {
+                reject((event.target as IDBOpenDBRequest).error);
+            });
+
+            request.addEventListener('upgradeneeded', (event) => {
+                const db = (event.target as IDBOpenDBRequest).result;
+                const transaction = (event.target as IDBOpenDBRequest).transaction;
+                if (!transaction) return;
+
+                const objectStore = transaction.objectStore('data');
+                for (const [field, unique] of Object.entries(fields)){
+                    !objectStore.indexNames.contains(field) && objectStore.createIndex(field, field, {unique});
+                }
             });
         });
     }
